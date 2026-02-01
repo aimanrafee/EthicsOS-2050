@@ -4,6 +4,7 @@ const SECRET_VAULT_KEY = "aiman2050";
 function initMatrix() {
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
+    if (!canvas) return;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -57,7 +58,34 @@ function sysLog(message) {
     }
 }
 
-// 4. SECURE AUTH LOGIC
+// 4. VAULT BROWSER LOGIC (25% Milestone) [cite: 2026-01-24]
+async function refreshVaultList() {
+    const listElement = document.getElementById('vault-list');
+    if (!listElement) return;
+
+    try {
+        const root = await navigator.storage.getDirectory();
+        listElement.innerHTML = ""; 
+        
+        let hasFiles = false;
+        for await (const entry of root.values()) {
+            hasFiles = true;
+            const fileItem = document.createElement('div');
+            fileItem.style.padding = "2px 0";
+            fileItem.style.borderBottom = "1px solid #001100";
+            fileItem.innerHTML = `<span style="color: #00ff00;">[FILE]</span> ${entry.name} <span style="float: right; color: #004400;">LOCKED</span>`;
+            listElement.appendChild(fileItem);
+        }
+
+        if (!hasFiles) {
+            listElement.innerHTML = "[Vault is currently empty]";
+        }
+    } catch (err) {
+        listElement.innerHTML = "[Error accessing vault]";
+    }
+}
+
+// 5. SECURE AUTH LOGIC
 function handleAuth(event) {
     if (event.key === "Enter") {
         const input = document.getElementById('masterKey').value;
@@ -68,7 +96,7 @@ function handleAuth(event) {
             playBip('success');
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('osContent').style.display = 'block';
-            document.getElementById('matrixCanvas').style.opacity = "0.2"; // Malapkan matrix bila sudah login
+            document.getElementById('matrixCanvas').style.opacity = "0.2"; 
             
             if (dashStatus) {
                 dashStatus.innerText = "[SECURE_LEVEL: ALPHA]";
@@ -77,6 +105,7 @@ function handleAuth(event) {
             
             checkStorage();
             loadShadowDraft();
+            refreshVaultList(); // Kemaskini senarai fail masa login [cite: 2026-02-02]
             sysLog("Session started. Identity verified.");
         } else {
             playBip('error');
@@ -90,13 +119,13 @@ function handleAuth(event) {
     }
 }
 
-// 5. CLOCK ENGINE
+// 6. CLOCK ENGINE
 setInterval(() => {
     const clock = document.getElementById('system-clock');
     if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
 }, 1000);
 
-// 6. GHOST STORAGE (SAVE/LOAD)
+// 7. GHOST STORAGE (SAVE/LOAD)
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -109,6 +138,7 @@ async function saveToGhost() {
         playBip('success');
         sysLog("Manifested to Ghost Storage.");
         checkStorage();
+        refreshVaultList(); // Kemaskini senarai fail selepas save [cite: 2026-02-02]
     } catch (err) { sysLog("Error: Manifestation failed."); }
 }
 
@@ -125,7 +155,7 @@ async function loadFromGhost() {
     } catch (err) { sysLog("Notice: Void is empty."); }
 }
 
-// 7. STORAGE ANALYTICS & AUTO-SAVE
+// 8. STORAGE ANALYTICS
 async function checkStorage() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -136,6 +166,7 @@ async function checkStorage() {
     } catch (e) {}
 }
 
+// 9. SHADOW AUTO-SAVE
 async function shadowAutoSave() {
     const content = document.getElementById('mainEditor').value;
     if (content.trim() === "") return;
@@ -147,10 +178,12 @@ async function shadowAutoSave() {
         await writable.write(encrypted);
         await writable.close();
         sysLog("Shadow draft synchronized.");
+        refreshVaultList(); // Pastikan shadow draft muncul dalam senarai [cite: 2026-02-02]
     } catch (e) {}
 }
 setInterval(shadowAutoSave, 30000);
 
+// 10. PROACTIVE RECOVERY
 async function loadShadowDraft() {
     try {
         const root = await navigator.storage.getDirectory();

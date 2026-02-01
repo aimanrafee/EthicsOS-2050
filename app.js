@@ -48,6 +48,16 @@ function playBip(type) {
     } catch (e) {}
 }
 
+function playTypeSound() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.frequency.value = 150;
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.04);
+}
+
 // 3. SYSTEM LOG ENGINE
 function sysLog(message) {
     const logBox = document.getElementById('terminal-log');
@@ -58,7 +68,48 @@ function sysLog(message) {
     }
 }
 
-// 4. VAULT BROWSER LOGIC (25% Milestone) [cite: 2026-01-24]
+// 4. WINDOW MANAGEMENT SYSTEM
+function openWin(id) {
+    const win = document.getElementById(id);
+    if (win) {
+        win.style.display = 'block';
+        win.style.zIndex = 100; // Bawa ke hadapan
+        document.getElementById('active-app').innerText = id.replace('win-', '').toUpperCase();
+        playBip('success');
+        sysLog(`App launched: ${id}`);
+    }
+}
+
+function closeWin(id) {
+    const win = document.getElementById(id);
+    if (win) {
+        win.style.display = 'none';
+        document.getElementById('active-app').innerText = "DESKTOP";
+    }
+}
+
+// 5. SOVEREIGN CALCULATOR LOGIC
+function calcInput(val) {
+    const display = document.getElementById('calc-display');
+    if (display) {
+        display.value += val;
+        playTypeSound();
+    }
+}
+
+function calcResult() {
+    const display = document.getElementById('calc-display');
+    try {
+        const res = eval(display.value);
+        display.value = res;
+        playBip('success');
+    } catch(e) {
+        display.value = "ERROR";
+        playBip('error');
+    }
+}
+
+// 6. VAULT BROWSER LOGIC (25% Milestone) [cite: 2026-01-24]
 async function refreshVaultList() {
     const listElement = document.getElementById('vault-list');
     if (!listElement) return;
@@ -81,7 +132,7 @@ async function refreshVaultList() {
     }
 }
 
-// 5. SECURE AUTH LOGIC
+// 7. SECURE AUTH LOGIC
 function handleAuth(event) {
     if (event.key === "Enter") {
         const input = document.getElementById('masterKey').value;
@@ -114,13 +165,13 @@ function handleAuth(event) {
     }
 }
 
-// 6. CLOCK ENGINE
+// 8. CLOCK ENGINE
 setInterval(() => {
     const clock = document.getElementById('system-clock');
     if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
 }, 1000);
 
-// 7. GHOST STORAGE (SAVE/LOAD) [cite: 2026-02-02]
+// 9. GHOST STORAGE (SAVE/LOAD) [cite: 2026-02-02]
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -150,7 +201,7 @@ async function loadFromGhost() {
     } catch (err) { sysLog("Notice: Void is empty."); }
 }
 
-// 8. STORAGE ANALYTICS
+// 10. STORAGE ANALYTICS & SHADOW AUTO-SAVE [cite: 2026-02-02]
 async function checkStorage() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -160,7 +211,6 @@ async function checkStorage() {
     } catch (e) {}
 }
 
-// 9. SHADOW AUTO-SAVE [cite: 2026-02-02]
 async function shadowAutoSave() {
     const content = document.getElementById('mainEditor').value;
     if (content.trim() === "") return;
@@ -177,7 +227,6 @@ async function shadowAutoSave() {
 }
 setInterval(shadowAutoSave, 30000);
 
-// 10. PROACTIVE RECOVERY [cite: 2026-02-02]
 async function loadShadowDraft() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -250,17 +299,15 @@ async function updateStorageVisuals() {
         for await (const entry of root.values()) count++;
         const bar = document.getElementById('storage-bar');
         if (bar) bar.style.width = Math.min((count / 10) * 100, 100) + "%";
-        const storageEl = document.getElementById('storage-status');
-        if (storageEl) storageEl.innerText = "GHOST_FILES: " + count;
     } catch (e) {}
 }
 
-// 14. STEGANOGRAPHY INJECT ENGINE (45% Milestone)
+// 14. STEGANOGRAPHY ENGINES
 async function injectGhostMessage() {
     const imgInput = document.getElementById('imageInput');
     const content = document.getElementById('mainEditor').value;
     if (!imgInput.files[0] || !content) {
-        sysLog("ERROR: Image and message required for injection.");
+        sysLog("ERROR: Image and message required.");
         return;
     }
     const reader = new FileReader();
@@ -278,9 +325,6 @@ async function injectGhostMessage() {
             for (let i = 0; i < secretData.length; i++) {
                 binarySecret += secretData[i].charCodeAt(0).toString(2).padStart(8, '0');
             }
-            if (binarySecret.length > pixels.length / 4) {
-                sysLog("ERROR: Message too large."); return;
-            }
             for (let i = 0; i < binarySecret.length; i++) {
                 pixels[i * 4] = (pixels[i * 4] & 0xFE) | parseInt(binarySecret[i]);
             }
@@ -297,13 +341,9 @@ async function injectGhostMessage() {
     reader.readAsDataURL(imgInput.files[0]);
 }
 
-// 15. GHOST DECODER ENGINE (50% Milestone) [cite: 2026-02-02]
 async function extractGhostMessage() {
     const imgInput = document.getElementById('imageInput');
-    if (!imgInput.files[0]) {
-        sysLog("ERROR: Please select a ghost image to decode.");
-        return;
-    }
+    if (!imgInput.files[0]) return;
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = new Image();
@@ -315,7 +355,6 @@ async function extractGhostMessage() {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const pixels = imageData.data;
             let binarySecret = "";
-            sysLog("SENTINEL: Scanning image pixels for hidden fragments...");
             for (let i = 0; i < pixels.length / 4; i++) {
                 binarySecret += (pixels[i * 4] & 1).toString();
             }
@@ -329,11 +368,10 @@ async function extractGhostMessage() {
             if (secretData.includes("##END##")) {
                 const finalMessage = atob(secretData.replace("##END##", ""));
                 document.getElementById('mainEditor').value = finalMessage;
-                sysLog("SUCCESS: Hidden message extracted from the void.");
+                sysLog("SUCCESS: Extraction complete.");
                 playBip('success');
             } else {
-                sysLog("NOTICE: No hidden ghost fragments found.");
-                playBip('error');
+                sysLog("NOTICE: No ghost fragments found.");
             }
         };
         img.src = e.target.result;

@@ -10,47 +10,34 @@
         /* Lapisan Matrix Rain (20% Milestone) [cite: 2026-01-24] */
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; transition: opacity 2s ease-in-out; }
 
-        #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: rgba(5, 5, 5, 0.9); z-index: 100; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
-        .container { display: none; width: 800px; text-align: center; z-index: 101; background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 5px; }
+        #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: rgba(5, 5, 5, 0.9); z-index: 200; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
         
-        /* Status Bar Style (40% Milestone) [cite: 2026-01-24] */
-        #status-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #004400; padding: 10px; margin-bottom: 20px; font-size: 14px; }
+        /* Container Utama */
+        .container { display: none; width: 900px; text-align: center; z-index: 101; background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 5px; border: 1px solid #004400; }
         
-        input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 10px; margin-top: 10px; text-align: center; outline: none; width: 200px; }
-        textarea { width: 100%; height: 200px; background: rgba(5, 5, 5, 0.9); color: #00ff00; border: 1px solid #004400; padding: 10px; margin-top: 20px; outline: none; resize: none; font-family: 'Courier New', monospace; }
+        /* Status Bar Style */
+        #status-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #004400; padding: 10px; margin-bottom: 10px; font-size: 14px; background: rgba(0, 20, 0, 0.5); }
         
-        /* Gaya Vault Browser (25% Milestone) [cite: 2026-01-24] */
-        #vault-browser { margin-top: 20px; text-align: left; border: 1px solid #004400; background: rgba(5,5,5,0.9); padding: 10px; }
-        #vault-list { font-size: 11px; color: #008800; min-height: 20px; max-height: 60px; overflow-y: auto; }
+        /* Desktop & Windowing System */
+        #desktop-area { position: relative; height: 500px; border: 1px solid #004400; overflow: hidden; background: rgba(0,5,0,0.6); margin-bottom: 10px; }
+        
+        .window { display: none; position: absolute; border: 1px solid #0f0; background: #000; z-index: 10; box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); }
+        .win-header { background: #004400; padding: 5px 10px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; }
+        .win-content { padding: 15px; overflow-y: auto; }
 
-        #terminal-log { background: rgba(5, 5, 5, 0.9); color: #008800; border: 1px solid #004400; height: 100px; margin-top: 10px; font-size: 11px; text-align: left; padding: 8px; overflow-y: auto; font-family: monospace; }
+        /* UI Elements */
+        input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 8px; text-align: center; outline: none; }
+        textarea { width: 100%; height: 250px; background: rgba(5, 5, 5, 0.9); color: #00ff00; border: 1px solid #004400; padding: 10px; outline: none; resize: none; font-family: 'Courier New', monospace; }
         
-        button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 10px; cursor: pointer; margin: 10px 5px 0 5px; transition: 0.3s; font-family: 'Courier New', monospace; }
-        button:hover { background: #00ff00; color: #000; }
+        #terminal-log { background: rgba(5, 5, 5, 0.9); color: #008800; border: 1px solid #004400; height: 80px; font-size: 11px; text-align: left; padding: 8px; overflow-y: auto; margin-top: 10px; }
         
-        /* Kemaskini Gaya Butang Solid 2050 (50% Milestone) */
-        .os-button {
-            background: transparent;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            padding: 5px 15px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            font-size: 12px;
-        }
+        button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 8px 12px; cursor: pointer; transition: 0.3s; font-family: 'Courier New', monospace; font-size: 12px; }
+        button:hover { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
+        
+        /* Launcher Bar (Ubuntu Style) */
+        #launcher { display: flex; justify-content: center; gap: 15px; background: rgba(0, 30, 0, 0.8); padding: 12px; border: 1px solid #004400; }
 
-        .os-button:hover {
-            background: #00ff00;
-            color: #000;
-            box-shadow: 0 0 10px #00ff00;
-        }
-
-        h1, h2 { letter-spacing: 2px; }
-        
-        /* Pulse Animation for Sentinel Heartbeat [cite: 2026-01-24] */
+        h1 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: 4px; }
         #pulse { transition: opacity 0.2s; }
     </style>
 </head>
@@ -66,47 +53,90 @@
 
     <div class="container" id="osContent">
         <div id="status-bar">
-            <div id="system-clock">TIME: 00:00:00</div>
-            <div id="sentinel-heartbeat" style="color: #00ff00; font-weight: bold;">SENTINEL: <span id="pulse">●</span></div>
-            <div id="dash-security-level" style="color: #00ff00; font-weight: bold;">[SECURE_LEVEL: ALPHA]</div>
-            <div id="storage-container" style="width: 150px; text-align: left;">
-                <div style="font-size: 10px;">GHOST_CAPACITY:</div>
-                <div style="border: 1px solid #004400; height: 8px; width: 100%;">
-                    <div id="storage-bar" style="background: #00ff00; height: 100%; width: 0%; transition: width 0.5s;"></div>
+            <div id="system-clock">00:00:00</div>
+            <div id="active-app" style="color: #0f0; font-weight: bold;">DESKTOP</div>
+            <div id="sentinel-heartbeat">SENTINEL: <span id="pulse">●</span></div>
+            <div id="storage-container" style="width: 120px;">
+                <div style="font-size: 9px;">GHOST_CAP:</div>
+                <div style="border: 1px solid #004400; height: 6px; width: 100%;">
+                    <div id="storage-bar" style="background: #00ff00; height: 100%; width: 0%;"></div>
                 </div>
             </div>
         </div>
 
         <h1>EthicsOS v1.0</h1>
-        <div style="font-size: 12px; color: #008800; margin-bottom: 10px;">SESSION: SECURE | MODE: OFFLINE_SMART</div>
-        
-        <textarea id="mainEditor" placeholder="Enter secure data..." oninput="playTypeSound()"></textarea>
-        
-        <div class="stegano-controls" style="margin-top: 20px; border: 1px solid #004400; padding: 10px; text-align: left;">
-            <h3 style="color: #00ff00; font-size: 0.8rem; margin-top: 0;">[STEGANOGRAPHY_ENGINE_V1]</h3>
-            <input type="file" id="imageInput" accept="image/*" style="color: #0f0; margin-bottom: 10px; font-size: 12px; border: none; width: auto;">
-            <div class="button-group" style="display: flex; gap: 10px;">
-                <button onclick="injectGhostMessage()" class="os-button">INJECT_MESSAGE</button>
-                <button onclick="extractGhostMessage()" class="os-button" style="background: rgba(0, 50, 0, 0.5);">EXTRACT_FROM_VOID</button>
+
+        <div id="desktop-area">
+            
+            <div id="win-editor" class="window" style="display:block; width: 700px; top: 20px; left: 100px; z-index: 5;">
+                <div class="win-header">
+                    <span>SOVEREIGN_EDITOR</span>
+                    <button onclick="closeWin('win-editor')" style="color:red; border:none; background:none;">[X]</button>
+                </div>
+                <div class="win-content">
+                    <textarea id="mainEditor" placeholder="Enter secure data..." oninput="playTypeSound()"></textarea>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button onclick="saveToGhost()">SAVE</button>
+                        <button onclick="loadFromGhost()">LOAD</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="win-files" class="window" style="width: 350px; top: 50px; left: 50px;">
+                <div class="win-header">
+                    <span>FILE_MANAGER</span>
+                    <button onclick="closeWin('win-files')" style="color:red; border:none; background:none;">[X]</button>
+                </div>
+                <div class="win-content">
+                    <div id="vault-list" style="height: 200px; overflow-y: auto; text-align: left; font-size: 12px; color: #008800;">
+                        [Scanning...]
+                    </div>
+                </div>
+            </div>
+
+            <div id="win-calc" class="window" style="width: 220px; top: 100px; left: 500px;">
+                <div class="win-header">
+                    <span>CALC_2050</span>
+                    <button onclick="closeWin('win-calc')" style="color:red; border:none; background:none;">[X]</button>
+                </div>
+                <div class="win-content">
+                    <input id="calc-display" style="width:100%; margin-bottom:10px; text-align:right;" disabled>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 5px;">
+                        <button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button><button onclick="calcInput('9')">9</button><button onclick="calcInput('/')">/</button>
+                        <button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button><button onclick="calcInput('6')">6</button><button onclick="calcInput('*')">*</button>
+                        <button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button><button onclick="calcInput('3')">3</button><button onclick="calcInput('-')">-</button>
+                        <button onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button><button onclick="calcResult()">=</button><button onclick="calcInput('+')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="win-stegano" class="window" style="width: 400px; top: 150px; left: 250px;">
+                <div class="win-header">
+                    <span>STEGANO_ENGINE</span>
+                    <button onclick="closeWin('win-stegano')" style="color:red; border:none; background:none;">[X]</button>
+                </div>
+                <div class="win-content" style="text-align: left;">
+                    <input type="file" id="imageInput" accept="image/*" style="font-size: 10px; margin-bottom: 10px;">
+                    <button onclick="injectGhostMessage()">INJECT</button>
+                    <button onclick="extractGhostMessage()">EXTRACT</button>
+                </div>
             </div>
         </div>
 
-        <canvas id="steganoCanvas" style="display:none;"></canvas>
+        <div id="terminal-log">[SYSTEM READY] - Awaiting Architect input...</div>
 
-        <div id="vault-browser">
-            <div style="font-size: 12px; color: #00ff00; border-bottom: 1px solid #004400; padding-bottom: 5px; margin-bottom: 10px;">> ENCRYPTED_VAULT_INDEX</div>
-            <div id="vault-list">[Scanning for secure fragments...]</div>
+        <div id="launcher">
+            <button onclick="openWin('win-editor')">EDITOR</button>
+            <button onclick="openWin('win-files')">FILES</button>
+            <button onclick="openWin('win-calc')">CALC</button>
+            <button onclick="openWin('win-stegano')">STEGANO</button>
+            <div style="border-left: 1px solid #004400; margin: 0 10px;"></div>
+            <button onclick="wipeVault()" style="color:red; border-color:red;">PURGE</button>
+            <button onclick="location.reload()" style="color:#aaa;">LOGOUT</button>
         </div>
-        
-        <div id="terminal-log">[SYSTEM READY] - Waiting for input...</div>
-
-        <br>
-        <button onclick="saveToGhost()">SAVE TO GHOST</button>
-        <button onclick="loadFromGhost()">LOAD FROM GHOST</button>
-        <button onclick="wipeVault()" style="border-color: #ff0000; color: #ff0000; font-weight: bold;">WIPE VAULT</button>
-        <button onclick="location.reload()" style="border-color: #550000; color: #ff0000;">LOGOUT</button>
     </div>
 
+    <canvas id="steganoCanvas" style="display:none;"></canvas>
     <script src="app.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 const SECRET_VAULT_KEY = "aiman2050"; 
 
-// 1. NEURAL MATRIX ENGINE (20% Milestone)
+// 1. NEURAL MATRIX ENGINE (20% Milestone) [cite: 2026-01-24]
 function initMatrix() {
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
@@ -31,7 +31,7 @@ function initMatrix() {
 }
 window.onload = initMatrix;
 
-// 2. AUDIO ENGINE
+// 2. AUDIO ENGINE [cite: 2026-01-24]
 function playBip(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -105,7 +105,7 @@ function handleAuth(event) {
             
             checkStorage();
             loadShadowDraft();
-            refreshVaultList(); // Kemaskini senarai fail masa login [cite: 2026-02-02]
+            refreshVaultList();
             sysLog("Session started. Identity verified.");
         } else {
             playBip('error');
@@ -125,7 +125,7 @@ setInterval(() => {
     if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
 }, 1000);
 
-// 7. GHOST STORAGE (SAVE/LOAD)
+// 7. GHOST STORAGE (SAVE/LOAD) [cite: 2026-02-02]
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -138,7 +138,7 @@ async function saveToGhost() {
         playBip('success');
         sysLog("Manifested to Ghost Storage.");
         checkStorage();
-        refreshVaultList(); // Kemaskini senarai fail selepas save [cite: 2026-02-02]
+        refreshVaultList();
     } catch (err) { sysLog("Error: Manifestation failed."); }
 }
 
@@ -166,7 +166,7 @@ async function checkStorage() {
     } catch (e) {}
 }
 
-// 9. SHADOW AUTO-SAVE
+// 9. SHADOW AUTO-SAVE [cite: 2026-02-02]
 async function shadowAutoSave() {
     const content = document.getElementById('mainEditor').value;
     if (content.trim() === "") return;
@@ -178,12 +178,12 @@ async function shadowAutoSave() {
         await writable.write(encrypted);
         await writable.close();
         sysLog("Shadow draft synchronized.");
-        refreshVaultList(); // Pastikan shadow draft muncul dalam senarai [cite: 2026-02-02]
+        refreshVaultList();
     } catch (e) {}
 }
 setInterval(shadowAutoSave, 30000);
 
-// 10. PROACTIVE RECOVERY
+// 10. PROACTIVE RECOVERY [cite: 2026-02-02]
 async function loadShadowDraft() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -196,4 +196,35 @@ async function loadShadowDraft() {
             sysLog("Restored shadow draft.");
         }
     } catch (e) {}
+}
+
+// 11. GHOST ERASER PROTOCOL (30% Milestone) [cite: 2026-01-24]
+async function wipeVault() {
+    const confirmation = confirm("WARNING: This will PERMANENTLY erase all secure fragments. Proceed?");
+    
+    if (confirmation) {
+        try {
+            // Mainkan bunyi amaran siren [cite: 2026-01-24]
+            playBip('error'); 
+            setTimeout(() => playBip('error'), 200);
+
+            const root = await navigator.storage.getDirectory();
+            
+            // Padam setiap fail dalam storan [cite: 2026-02-02]
+            for await (const entry of root.values()) {
+                await root.removeEntry(entry.name);
+                sysLog(`ERASED: ${entry.name}`);
+            }
+
+            // Reset UI [cite: 2026-01-24]
+            document.getElementById('mainEditor').value = "";
+            checkStorage();
+            refreshVaultList();
+            
+            sysLog("CRITICAL: Vault has been sanitized. Zero data remains.");
+            alert("VAULT SANITIZED");
+        } catch (err) {
+            sysLog("Error: Sanitization protocol failed.");
+        }
+    }
 }

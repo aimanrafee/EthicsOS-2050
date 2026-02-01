@@ -62,11 +62,9 @@ function sysLog(message) {
 async function refreshVaultList() {
     const listElement = document.getElementById('vault-list');
     if (!listElement) return;
-
     try {
         const root = await navigator.storage.getDirectory();
         listElement.innerHTML = ""; 
-        
         let hasFiles = false;
         for await (const entry of root.values()) {
             hasFiles = true;
@@ -76,11 +74,7 @@ async function refreshVaultList() {
             fileItem.innerHTML = `<span style="color: #00ff00;">[FILE]</span> ${entry.name} <span style="float: right; color: #004400;">LOCKED</span>`;
             listElement.appendChild(fileItem);
         }
-
-        if (!hasFiles) {
-            listElement.innerHTML = "[Vault is currently empty]";
-        }
-        // Kemaskini bar status Dashboard [cite: 2026-02-02]
+        if (!hasFiles) listElement.innerHTML = "[Vault is currently empty]";
         updateStorageVisuals();
     } catch (err) {
         listElement.innerHTML = "[Error accessing vault]";
@@ -99,12 +93,10 @@ function handleAuth(event) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('osContent').style.display = 'block';
             document.getElementById('matrixCanvas').style.opacity = "0.2"; 
-            
             if (dashStatus) {
                 dashStatus.innerText = "[SECURE_LEVEL: ALPHA]";
                 dashStatus.style.color = "#00ff00";
             }
-            
             checkStorage();
             loadShadowDraft();
             refreshVaultList();
@@ -214,25 +206,21 @@ async function wipeVault() {
             }
             document.getElementById('mainEditor').value = "";
             refreshVaultList();
-            sysLog("CRITICAL: Vault has been sanitized. Zero data remains.");
+            sysLog("CRITICAL: Vault has been sanitized.");
             alert("VAULT SANITIZED");
-        } catch (err) {
-            sysLog("Error: Sanitization protocol failed.");
-        }
+        } catch (err) { sysLog("Error: Sanitization protocol failed."); }
     }
 }
 
 // 12. BINARY GHOST LOCK (35% Milestone) [cite: 2026-01-24]
 let idleTimer;
 const LOCK_TIMEOUT = 300000; 
-
 function resetIdleTimer() {
     clearTimeout(idleTimer);
     if (document.getElementById('osContent').style.display === 'block') {
         idleTimer = setTimeout(initiateGhostLock, LOCK_TIMEOUT);
     }
 }
-
 async function initiateGhostLock() {
     sysLog("SENTINEL: Idle state detected. Initiating Binary Ghost Lock...");
     await shadowAutoSave();
@@ -245,51 +233,110 @@ async function initiateGhostLock() {
     document.getElementById('security-status-ui').style.color = "#ffff00";
     playBip('error');
 }
-
 window.onmousemove = resetIdleTimer;
 window.onkeypress = resetIdleTimer;
 window.onclick = resetIdleTimer;
 
 // 13. NEURAL DASHBOARD ENGINE (40% Milestone) [cite: 2026-01-24]
-
-// Animasi Heartbeat (Sentinel Pulse)
 setInterval(() => {
     const pulse = document.getElementById('pulse');
-    if (pulse) {
-        pulse.style.opacity = pulse.style.opacity === "0" ? "1" : "0";
-    }
+    if (pulse) pulse.style.opacity = pulse.style.opacity === "0" ? "1" : "0";
 }, 1000);
 
-// Bunyi Taipan Halus (Terminal Sound FX) [cite: 2026-01-24]
-function playTypeSound() {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(150 + Math.random() * 50, ctx.currentTime);
-        gain.gain.setValueAtTime(0.02, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.05);
-    } catch (e) {}
-}
-
-// Kemaskini Visual Storage Bar [cite: 2026-02-02]
 async function updateStorageVisuals() {
     try {
         const root = await navigator.storage.getDirectory();
         let count = 0;
         for await (const entry of root.values()) count++;
-        
-        // Andaikan kapasiti visual "penuh" pada 10 fail
-        const percentage = Math.min((count / 10) * 100, 100);
         const bar = document.getElementById('storage-bar');
-        if (bar) bar.style.width = percentage + "%";
-        
+        if (bar) bar.style.width = Math.min((count / 10) * 100, 100) + "%";
         const storageEl = document.getElementById('storage-status');
         if (storageEl) storageEl.innerText = "GHOST_FILES: " + count;
     } catch (e) {}
+}
+
+// 14. STEGANOGRAPHY INJECT ENGINE (45% Milestone)
+async function injectGhostMessage() {
+    const imgInput = document.getElementById('imageInput');
+    const content = document.getElementById('mainEditor').value;
+    if (!imgInput.files[0] || !content) {
+        sysLog("ERROR: Image and message required for injection.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('steganoCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width; canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            const secretData = btoa(content) + "##END##";
+            let binarySecret = "";
+            for (let i = 0; i < secretData.length; i++) {
+                binarySecret += secretData[i].charCodeAt(0).toString(2).padStart(8, '0');
+            }
+            if (binarySecret.length > pixels.length / 4) {
+                sysLog("ERROR: Message too large."); return;
+            }
+            for (let i = 0; i < binarySecret.length; i++) {
+                pixels[i * 4] = (pixels[i * 4] & 0xFE) | parseInt(binarySecret[i]);
+            }
+            ctx.putImageData(imageData, 0, 0);
+            const link = document.createElement('a');
+            link.download = "ghost_manifestation.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            sysLog("SUCCESS: Ghost Message manifested.");
+            playBip('success');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(imgInput.files[0]);
+}
+
+// 15. GHOST DECODER ENGINE (50% Milestone) [cite: 2026-02-02]
+async function extractGhostMessage() {
+    const imgInput = document.getElementById('imageInput');
+    if (!imgInput.files[0]) {
+        sysLog("ERROR: Please select a ghost image to decode.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width; canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            let binarySecret = "";
+            sysLog("SENTINEL: Scanning image pixels for hidden fragments...");
+            for (let i = 0; i < pixels.length / 4; i++) {
+                binarySecret += (pixels[i * 4] & 1).toString();
+            }
+            let secretData = "";
+            for (let i = 0; i < binarySecret.length; i += 8) {
+                const charCode = parseInt(binarySecret.substr(i, 8), 2);
+                if (charCode === 0) break;
+                secretData += String.fromCharCode(charCode);
+                if (secretData.endsWith("##END##")) break;
+            }
+            if (secretData.includes("##END##")) {
+                const finalMessage = atob(secretData.replace("##END##", ""));
+                document.getElementById('mainEditor').value = finalMessage;
+                sysLog("SUCCESS: Hidden message extracted from the void.");
+                playBip('success');
+            } else {
+                sysLog("NOTICE: No hidden ghost fragments found.");
+                playBip('error');
+            }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(imgInput.files[0]);
 }

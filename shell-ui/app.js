@@ -1,3 +1,19 @@
+const SECRET_VAULT_KEY = "aiman2050"; 
+
+function handleAuth(event) {
+    if (event.key === "Enter") {
+        const input = document.getElementById('masterKey').value;
+        if (input === SECRET_VAULT_KEY) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('osContent').style.display = 'block';
+            alert("IDENTITY VERIFIED. Welcome to EthicsOS.");
+        } else {
+            alert("ACCESS DENIED: Intrusive signature detected.");
+            document.getElementById('masterKey').value = "";
+        }
+    }
+}
+
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -26,3 +42,4 @@ async function loadFromGhost() {
         alert("NOTICE: No data found or decryption failed.");
     }
 }
+

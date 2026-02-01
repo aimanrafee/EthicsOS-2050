@@ -1,6 +1,36 @@
 const SECRET_VAULT_KEY = "aiman2050"; 
 
-// 1. AUDIO ENGINE
+// 1. NEURAL MATRIX ENGINE (20% Milestone)
+function initMatrix() {
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(draw, 33);
+}
+window.onload = initMatrix;
+
+// 2. AUDIO ENGINE
 function playBip(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -14,10 +44,10 @@ function playBip(type) {
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.1);
-    } catch (e) { console.log("Audio muted"); }
+    } catch (e) {}
 }
 
-// 2. SYSTEM LOG ENGINE
+// 3. SYSTEM LOG ENGINE
 function sysLog(message) {
     const logBox = document.getElementById('terminal-log');
     if (logBox) {
@@ -27,7 +57,7 @@ function sysLog(message) {
     }
 }
 
-// 3. SECURE AUTH LOGIC (Milestone 15%)
+// 4. SECURE AUTH LOGIC
 function handleAuth(event) {
     if (event.key === "Enter") {
         const input = document.getElementById('masterKey').value;
@@ -38,8 +68,8 @@ function handleAuth(event) {
             playBip('success');
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('osContent').style.display = 'block';
+            document.getElementById('matrixCanvas').style.opacity = "0.2"; // Malapkan matrix bila sudah login
             
-            // Sync status to ALPHA
             if (dashStatus) {
                 dashStatus.innerText = "[SECURE_LEVEL: ALPHA]";
                 dashStatus.style.color = "#00ff00";
@@ -55,18 +85,18 @@ function handleAuth(event) {
                 statusUI.style.color = "#ff0000";
             }
             sysLog("CRITICAL: Unauthorized access attempt.");
-            document.getElementById('masterKey').value = ""; // Clear input
+            document.getElementById('masterKey').value = "";
         }
     }
 }
 
-// 4. CLOCK ENGINE
+// 5. CLOCK ENGINE
 setInterval(() => {
     const clock = document.getElementById('system-clock');
     if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
 }, 1000);
 
-// 5. GHOST STORAGE (SAVE)
+// 6. GHOST STORAGE (SAVE/LOAD)
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -82,7 +112,6 @@ async function saveToGhost() {
     } catch (err) { sysLog("Error: Manifestation failed."); }
 }
 
-// 6. GHOST STORAGE (LOAD)
 async function loadFromGhost() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -96,7 +125,7 @@ async function loadFromGhost() {
     } catch (err) { sysLog("Notice: Void is empty."); }
 }
 
-// 7. STORAGE ANALYTICS
+// 7. STORAGE ANALYTICS & AUTO-SAVE
 async function checkStorage() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -107,7 +136,6 @@ async function checkStorage() {
     } catch (e) {}
 }
 
-// 8. SHADOW AUTO-SAVE (12% Milestone)
 async function shadowAutoSave() {
     const content = document.getElementById('mainEditor').value;
     if (content.trim() === "") return;
@@ -123,7 +151,6 @@ async function shadowAutoSave() {
 }
 setInterval(shadowAutoSave, 30000);
 
-// 9. PROACTIVE RECOVERY
 async function loadShadowDraft() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -133,7 +160,7 @@ async function loadShadowDraft() {
         const decrypted = atob(encrypted.split('').reverse().join(''));
         if (document.getElementById('mainEditor').value === "") {
             document.getElementById('mainEditor').value = decrypted;
-            sysLog("Restored last shadow draft.");
+            sysLog("Restored shadow draft.");
         }
-    } catch (e) { sysLog("No shadow draft detected."); }
+    } catch (e) {}
 }

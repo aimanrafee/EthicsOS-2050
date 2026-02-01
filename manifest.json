@@ -1,0 +1,17 @@
+{
+  "short_name": "EthicOS",
+  "name": "EthicOS 2050 Sovereign Terminal",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2092/2092215.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#00ff00",
+  "description": "Offline Smartest Algorithm HTML Sovereign OS"
+}

@@ -80,6 +80,8 @@ async function refreshVaultList() {
         if (!hasFiles) {
             listElement.innerHTML = "[Vault is currently empty]";
         }
+        // Kemaskini bar status Dashboard [cite: 2026-02-02]
+        updateStorageVisuals();
     } catch (err) {
         listElement.innerHTML = "[Error accessing vault]";
     }
@@ -106,7 +108,7 @@ function handleAuth(event) {
             checkStorage();
             loadShadowDraft();
             refreshVaultList();
-            resetIdleTimer(); // Mulakan timer sentinel selepas login [cite: 2026-01-24]
+            resetIdleTimer();
             sysLog("Session started. Identity verified.");
         } else {
             playBip('error');
@@ -162,8 +164,7 @@ async function checkStorage() {
         const root = await navigator.storage.getDirectory();
         let count = 0;
         for await (const entry of root.values()) count++;
-        const storageEl = document.getElementById('storage-status');
-        if (storageEl) storageEl.innerText = "GHOST_FILES: " + count;
+        updateStorageVisuals();
     } catch (e) {}
 }
 
@@ -202,7 +203,6 @@ async function loadShadowDraft() {
 // 11. GHOST ERASER PROTOCOL (30% Milestone) [cite: 2026-01-24]
 async function wipeVault() {
     const confirmation = confirm("WARNING: This will PERMANENTLY erase all secure fragments. Proceed?");
-    
     if (confirmation) {
         try {
             playBip('error'); 
@@ -213,7 +213,6 @@ async function wipeVault() {
                 sysLog(`ERASED: ${entry.name}`);
             }
             document.getElementById('mainEditor').value = "";
-            checkStorage();
             refreshVaultList();
             sysLog("CRITICAL: Vault has been sanitized. Zero data remains.");
             alert("VAULT SANITIZED");
@@ -225,7 +224,7 @@ async function wipeVault() {
 
 // 12. BINARY GHOST LOCK (35% Milestone) [cite: 2026-01-24]
 let idleTimer;
-const LOCK_TIMEOUT = 300000; // 5 minit (300,000 ms) [cite: 2026-01-24]
+const LOCK_TIMEOUT = 300000; 
 
 function resetIdleTimer() {
     clearTimeout(idleTimer);
@@ -236,28 +235,61 @@ function resetIdleTimer() {
 
 async function initiateGhostLock() {
     sysLog("SENTINEL: Idle state detected. Initiating Binary Ghost Lock...");
-    
-    // 1. Simpan draf secara automatik sebelum kunci [cite: 2026-02-02]
     await shadowAutoSave();
-    
-    // 2. Kosongkan editor untuk elakkan pengintipan [cite: 2026-01-24]
     document.getElementById('mainEditor').value = "";
-    
-    // 3. Kembali ke skrin login
     document.getElementById('osContent').style.display = 'none';
     document.getElementById('loginOverlay').style.display = 'block';
     document.getElementById('matrixCanvas').style.opacity = "1.0"; 
-    
-    // 4. Reset input kunci
     document.getElementById('masterKey').value = "";
     document.getElementById('security-status-ui').innerText = "[SESSION_LOCKED_BY_SENTINEL]";
     document.getElementById('security-status-ui').style.color = "#ffff00";
-    
     playBip('error');
-    sysLog("SENTINEL: Session secured. Data moved to shadow storage.");
 }
 
-// Pantau aktiviti pengguna untuk reset timer [cite: 2026-01-24]
 window.onmousemove = resetIdleTimer;
 window.onkeypress = resetIdleTimer;
 window.onclick = resetIdleTimer;
+
+// 13. NEURAL DASHBOARD ENGINE (40% Milestone) [cite: 2026-01-24]
+
+// Animasi Heartbeat (Sentinel Pulse)
+setInterval(() => {
+    const pulse = document.getElementById('pulse');
+    if (pulse) {
+        pulse.style.opacity = pulse.style.opacity === "0" ? "1" : "0";
+    }
+}, 1000);
+
+// Bunyi Taipan Halus (Terminal Sound FX) [cite: 2026-01-24]
+function playTypeSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(150 + Math.random() * 50, ctx.currentTime);
+        gain.gain.setValueAtTime(0.02, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+}
+
+// Kemaskini Visual Storage Bar [cite: 2026-02-02]
+async function updateStorageVisuals() {
+    try {
+        const root = await navigator.storage.getDirectory();
+        let count = 0;
+        for await (const entry of root.values()) count++;
+        
+        // Andaikan kapasiti visual "penuh" pada 10 fail
+        const percentage = Math.min((count / 10) * 100, 100);
+        const bar = document.getElementById('storage-bar');
+        if (bar) bar.style.width = percentage + "%";
+        
+        const storageEl = document.getElementById('storage-status');
+        if (storageEl) storageEl.innerText = "GHOST_FILES: " + count;
+    } catch (e) {}
+}

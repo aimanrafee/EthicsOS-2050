@@ -7,16 +7,19 @@
     <style>
         body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        /* Lapisan Matrix Rain (20% Milestone) */
+        /* Lapisan Matrix Rain (20% Milestone) [cite: 2026-01-24] */
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; transition: opacity 2s ease-in-out; }
 
         #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: rgba(5, 5, 5, 0.9); z-index: 100; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
         .container { display: none; width: 800px; text-align: center; z-index: 101; background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 5px; }
-        #status-bar { display: flex; justify-content: space-between; border-bottom: 1px solid #004400; padding: 10px; margin-bottom: 20px; font-size: 14px; }
+        
+        /* Status Bar Style (40% Milestone) [cite: 2026-01-24] */
+        #status-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #004400; padding: 10px; margin-bottom: 20px; font-size: 14px; }
+        
         input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 10px; margin-top: 10px; text-align: center; outline: none; width: 200px; }
         textarea { width: 100%; height: 200px; background: rgba(5, 5, 5, 0.9); color: #00ff00; border: 1px solid #004400; padding: 10px; margin-top: 20px; outline: none; resize: none; font-family: 'Courier New', monospace; }
         
-        /* Gaya Vault Browser (25% Milestone) */
+        /* Gaya Vault Browser (25% Milestone) [cite: 2026-01-24] */
         #vault-browser { margin-top: 20px; text-align: left; border: 1px solid #004400; background: rgba(5,5,5,0.9); padding: 10px; }
         #vault-list { font-size: 11px; color: #008800; min-height: 20px; max-height: 60px; overflow-y: auto; }
 
@@ -24,6 +27,9 @@
         button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 10px; cursor: pointer; margin: 10px 5px 0 5px; transition: 0.3s; font-family: 'Courier New', monospace; }
         button:hover { background: #00ff00; color: #000; }
         h1, h2 { letter-spacing: 2px; }
+        
+        /* Pulse Animation for Sentinel Heartbeat [cite: 2026-01-24] */
+        #pulse { transition: opacity 0.2s; }
     </style>
 </head>
 <body>
@@ -39,15 +45,20 @@
     <div class="container" id="osContent">
         <div id="status-bar">
             <div id="system-clock">TIME: 00:00:00</div>
+            <div id="sentinel-heartbeat" style="color: #00ff00; font-weight: bold;">SENTINEL: <span id="pulse">●</span></div>
             <div id="dash-security-level" style="color: #00ff00; font-weight: bold;">[SECURE_LEVEL: ALPHA]</div>
-            <div>STATION: SECURE_NODE_01</div>
-            <div id="storage-status">GHOST_FILES: 0</div>
+            <div id="storage-container" style="width: 150px; text-align: left;">
+                <div style="font-size: 10px;">GHOST_CAPACITY:</div>
+                <div style="border: 1px solid #004400; height: 8px; width: 100%;">
+                    <div id="storage-bar" style="background: #00ff00; height: 100%; width: 0%; transition: width 0.5s;"></div>
+                </div>
+            </div>
         </div>
 
         <h1>EthicsOS v1.0</h1>
         <div style="font-size: 12px; color: #008800; margin-bottom: 10px;">SESSION: SECURE | MODE: OFFLINE_SMART</div>
         
-        <textarea id="mainEditor" placeholder="Enter secure data..."></textarea>
+        <textarea id="mainEditor" placeholder="Enter secure data..." oninput="playTypeSound()"></textarea>
         
         <div id="vault-browser">
             <div style="font-size: 12px; color: #00ff00; border-bottom: 1px solid #004400; padding-bottom: 5px; margin-bottom: 10px;">> ENCRYPTED_VAULT_INDEX</div>

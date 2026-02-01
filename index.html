@@ -7,7 +7,7 @@
     <style>
         body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        /* Lapisan Matrix Rain (20% Milestone) [cite: 2026-01-24] */
+        /* Lapisan Matrix Rain */
         #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; transition: opacity 2s ease-in-out; }
 
         #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: rgba(5, 5, 5, 0.9); z-index: 200; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
@@ -121,6 +121,26 @@
                     <button onclick="extractGhostMessage()">EXTRACT</button>
                 </div>
             </div>
+
+            <div id="win-media" class="window" style="width: 450px; top: 80px; left: 300px;">
+                <div class="win-header">
+                    <span>GHOST_MEDIA_PLAYER</span>
+                    <button onclick="closeWin('win-media')" style="color:red; border:none; background:none;">[X]</button>
+                </div>
+                <div class="win-content" style="text-align: center;">
+                    <input type="file" id="mediaInput" accept="audio/*,video/*" style="font-size: 10px; margin-bottom: 10px; width: 100%;">
+                    
+                    <div id="mediaContainer" style="background: #000; border: 1px solid #004400; min-height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                        <p id="mediaPlaceholder" style="font-size: 10px; color: #004400;">[WAITING_FOR_MEDIA_FRAGMENT]</p>
+                        <video id="videoPlayer" controls style="display:none; width: 100%; max-height: 300px;"></video>
+                        <audio id="audioPlayer" controls style="display:none; width: 100%;"></audio>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-around; font-size: 10px; color: #0f0;">
+                        <span id="mediaFileName">NO_FILE_LOADED</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="terminal-log">[SYSTEM READY] - Awaiting Architect input...</div>
@@ -130,6 +150,7 @@
             <button onclick="openWin('win-files')">FILES</button>
             <button onclick="openWin('win-calc')">CALC</button>
             <button onclick="openWin('win-stegano')">STEGANO</button>
+            <button onclick="openWin('win-media')">MEDIA</button>
             <div style="border-left: 1px solid #004400; margin: 0 10px;"></div>
             <button onclick="wipeVault()" style="color:red; border-color:red;">PURGE</button>
             <button onclick="location.reload()" style="color:#aaa;">LOGOUT</button>

@@ -1,6 +1,7 @@
 const SECRET_VAULT_KEY = "aiman2050"; 
+let idleTimer;
 
-// 1. NEURAL MATRIX ENGINE (20% Milestone) [cite: 2026-01-24]
+// 1. NEURAL MATRIX ENGINE (20% Milestone)
 function initMatrix() {
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
@@ -9,7 +10,7 @@ function initMatrix() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+    const chars = "01010101ETHICOSSOVEREIGN2050";
     const fontSize = 14;
     const columns = canvas.width / fontSize;
     const drops = Array(Math.floor(columns)).fill(1);
@@ -31,13 +32,13 @@ function initMatrix() {
 }
 window.onload = initMatrix;
 
-// 2. AUDIO ENGINE [cite: 2026-01-24]
+// 2. AUDIO ENGINE
 function playBip(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = "square"; 
+        osc.type = type === 'success' ? 'sine' : 'square'; 
         osc.frequency.setValueAtTime(type === 'success' ? 880 : 220, ctx.currentTime);
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
@@ -49,13 +50,15 @@ function playBip(type) {
 }
 
 function playTypeSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.frequency.value = 150;
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
-    osc.connect(g); g.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.04);
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.frequency.value = 150;
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.04);
+    } catch (e) {}
 }
 
 // 3. SYSTEM LOG ENGINE
@@ -63,17 +66,17 @@ function sysLog(message) {
     const logBox = document.getElementById('terminal-log');
     if (logBox) {
         const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
-        logBox.innerHTML += `<br>[${now}] ${message}`;
+        logBox.innerHTML += `<br>[${now}] > ${message}`;
         logBox.scrollTop = logBox.scrollHeight;
     }
 }
 
-// 4. WINDOW MANAGEMENT SYSTEM
+// 4. WINDOW MANAGEMENT & DRAGGABLE SYSTEM
 function openWin(id) {
     const win = document.getElementById(id);
     if (win) {
         win.style.display = 'block';
-        win.style.zIndex = 100; // Bawa ke hadapan
+        win.style.zIndex = 100;
         document.getElementById('active-app').innerText = id.replace('win-', '').toUpperCase();
         playBip('success');
         sysLog(`App launched: ${id}`);
@@ -87,6 +90,29 @@ function closeWin(id) {
         document.getElementById('active-app').innerText = "DESKTOP";
     }
 }
+
+// Logik "Drag" Tetingkap Ubuntu-Style
+document.querySelectorAll('.win-header').forEach(header => {
+    header.onmousedown = function(e) {
+        let win = header.parentElement;
+        let shiftX = e.clientX - win.getBoundingClientRect().left;
+        let shiftY = e.clientY - win.getBoundingClientRect().top;
+
+        function moveAt(pageX, pageY) {
+            win.style.left = pageX - shiftX + 'px';
+            win.style.top = pageY - shiftY + 'px';
+        }
+
+        function onMouseMove(e) { moveAt(e.pageX, e.pageY); }
+        document.addEventListener('mousemove', onMouseMove);
+        
+        header.onmouseup = function() {
+            document.removeEventListener('mousemove', onMouseMove);
+            header.onmouseup = null;
+        };
+    };
+    header.ondragstart = function() { return false; };
+});
 
 // 5. SOVEREIGN CALCULATOR LOGIC
 function calcInput(val) {
@@ -104,212 +130,61 @@ function calcResult() {
         display.value = res;
         playBip('success');
     } catch(e) {
-        display.value = "ERROR";
+        display.value = "ERR";
         playBip('error');
     }
 }
 
-// 6. VAULT BROWSER LOGIC (25% Milestone) [cite: 2026-01-24]
-async function refreshVaultList() {
-    const listElement = document.getElementById('vault-list');
-    if (!listElement) return;
-    try {
-        const root = await navigator.storage.getDirectory();
-        listElement.innerHTML = ""; 
-        let hasFiles = false;
-        for await (const entry of root.values()) {
-            hasFiles = true;
-            const fileItem = document.createElement('div');
-            fileItem.style.padding = "2px 0";
-            fileItem.style.borderBottom = "1px solid #001100";
-            fileItem.innerHTML = `<span style="color: #00ff00;">[FILE]</span> ${entry.name} <span style="float: right; color: #004400;">LOCKED</span>`;
-            listElement.appendChild(fileItem);
-        }
-        if (!hasFiles) listElement.innerHTML = "[Vault is currently empty]";
-        updateStorageVisuals();
-    } catch (err) {
-        listElement.innerHTML = "[Error accessing vault]";
-    }
-}
+// 6. GHOST STORAGE & ENCRYPTION
+const encrypt = (t) => btoa(t).split('').reverse().join('');
+const decrypt = (t) => atob(t.split('').reverse().join(''));
 
-// 7. SECURE AUTH LOGIC
-function handleAuth(event) {
-    if (event.key === "Enter") {
-        const input = document.getElementById('masterKey').value;
-        const statusUI = document.getElementById('security-status-ui');
-        const dashStatus = document.getElementById('dash-security-level');
-
-        if (input === SECRET_VAULT_KEY) {
-            playBip('success');
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('osContent').style.display = 'block';
-            document.getElementById('matrixCanvas').style.opacity = "0.2"; 
-            if (dashStatus) {
-                dashStatus.innerText = "[SECURE_LEVEL: ALPHA]";
-                dashStatus.style.color = "#00ff00";
-            }
-            checkStorage();
-            loadShadowDraft();
-            refreshVaultList();
-            resetIdleTimer();
-            sysLog("Session started. Identity verified.");
-        } else {
-            playBip('error');
-            if (statusUI) {
-                statusUI.innerText = "[SECURE_LEVEL: OMEGA - BREACH DETECTED]";
-                statusUI.style.color = "#ff0000";
-            }
-            sysLog("CRITICAL: Unauthorized access attempt.");
-            document.getElementById('masterKey').value = "";
-        }
-    }
-}
-
-// 8. CLOCK ENGINE
-setInterval(() => {
-    const clock = document.getElementById('system-clock');
-    if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
-}, 1000);
-
-// 9. GHOST STORAGE (SAVE/LOAD) [cite: 2026-02-02]
 async function saveToGhost() {
-    const content = document.getElementById('mainEditor').value;
+    const content = encrypt(document.getElementById('mainEditor').value);
     try {
-        const encrypted = btoa(content).split('').reverse().join('');
         const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle('secure_data.ethx', { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(encrypted);
+        const handle = await root.getFileHandle('vault.ethx', {create:true});
+        const writable = await handle.createWritable();
+        await writable.write(content);
         await writable.close();
+        sysLog("Manual Save: Manifested to Ghost.");
         playBip('success');
-        sysLog("Manifested to Ghost Storage.");
-        checkStorage();
         refreshVaultList();
-    } catch (err) { sysLog("Error: Manifestation failed."); }
+    } catch (err) { sysLog("Error: Save failed."); }
 }
 
 async function loadFromGhost() {
     try {
         const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle('secure_data.ethx');
-        const file = await fileHandle.getFile();
-        const encrypted = await file.text();
-        const decrypted = atob(encrypted.split('').reverse().join(''));
-        document.getElementById('mainEditor').value = decrypted;
+        const handle = await root.getFileHandle('vault.ethx');
+        const file = await handle.getFile();
+        document.getElementById('mainEditor').value = decrypt(await file.text());
+        sysLog("Data restored from the void.");
         playBip('success');
-        sysLog("Restored from the void.");
-    } catch (err) { sysLog("Notice: Void is empty."); }
+    } catch (e) { sysLog("Notice: Void is empty."); }
 }
 
-// 10. STORAGE ANALYTICS & SHADOW AUTO-SAVE [cite: 2026-02-02]
-async function checkStorage() {
+async function refreshVaultList() {
+    const list = document.getElementById('vault-list');
+    if (!list) return;
     try {
         const root = await navigator.storage.getDirectory();
+        list.innerHTML = "";
         let count = 0;
-        for await (const entry of root.values()) count++;
-        updateStorageVisuals();
-    } catch (e) {}
-}
-
-async function shadowAutoSave() {
-    const content = document.getElementById('mainEditor').value;
-    if (content.trim() === "") return;
-    try {
-        const encrypted = btoa(content).split('').reverse().join('');
-        const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle('shadow_draft.ethx', { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(encrypted);
-        await writable.close();
-        sysLog("Shadow draft synchronized.");
-        refreshVaultList();
-    } catch (e) {}
-}
-setInterval(shadowAutoSave, 30000);
-
-async function loadShadowDraft() {
-    try {
-        const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle('shadow_draft.ethx');
-        const file = await fileHandle.getFile();
-        const encrypted = await file.text();
-        const decrypted = atob(encrypted.split('').reverse().join(''));
-        if (document.getElementById('mainEditor').value === "") {
-            document.getElementById('mainEditor').value = decrypted;
-            sysLog("Restored shadow draft.");
+        for await (const entry of root.values()) {
+            count++;
+            list.innerHTML += `<div style="margin-bottom:5px; border-bottom:1px solid #001100;">[SECURE] ${entry.name}</div>`;
         }
-    } catch (e) {}
-}
-
-// 11. GHOST ERASER PROTOCOL (30% Milestone) [cite: 2026-01-24]
-async function wipeVault() {
-    const confirmation = confirm("WARNING: This will PERMANENTLY erase all secure fragments. Proceed?");
-    if (confirmation) {
-        try {
-            playBip('error'); 
-            setTimeout(() => playBip('error'), 200);
-            const root = await navigator.storage.getDirectory();
-            for await (const entry of root.values()) {
-                await root.removeEntry(entry.name);
-                sysLog(`ERASED: ${entry.name}`);
-            }
-            document.getElementById('mainEditor').value = "";
-            refreshVaultList();
-            sysLog("CRITICAL: Vault has been sanitized.");
-            alert("VAULT SANITIZED");
-        } catch (err) { sysLog("Error: Sanitization protocol failed."); }
-    }
-}
-
-// 12. BINARY GHOST LOCK (35% Milestone) [cite: 2026-01-24]
-let idleTimer;
-const LOCK_TIMEOUT = 300000; 
-function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    if (document.getElementById('osContent').style.display === 'block') {
-        idleTimer = setTimeout(initiateGhostLock, LOCK_TIMEOUT);
-    }
-}
-async function initiateGhostLock() {
-    sysLog("SENTINEL: Idle state detected. Initiating Binary Ghost Lock...");
-    await shadowAutoSave();
-    document.getElementById('mainEditor').value = "";
-    document.getElementById('osContent').style.display = 'none';
-    document.getElementById('loginOverlay').style.display = 'block';
-    document.getElementById('matrixCanvas').style.opacity = "1.0"; 
-    document.getElementById('masterKey').value = "";
-    document.getElementById('security-status-ui').innerText = "[SESSION_LOCKED_BY_SENTINEL]";
-    document.getElementById('security-status-ui').style.color = "#ffff00";
-    playBip('error');
-}
-window.onmousemove = resetIdleTimer;
-window.onkeypress = resetIdleTimer;
-window.onclick = resetIdleTimer;
-
-// 13. NEURAL DASHBOARD ENGINE (40% Milestone) [cite: 2026-01-24]
-setInterval(() => {
-    const pulse = document.getElementById('pulse');
-    if (pulse) pulse.style.opacity = pulse.style.opacity === "0" ? "1" : "0";
-}, 1000);
-
-async function updateStorageVisuals() {
-    try {
-        const root = await navigator.storage.getDirectory();
-        let count = 0;
-        for await (const entry of root.values()) count++;
         const bar = document.getElementById('storage-bar');
         if (bar) bar.style.width = Math.min((count / 10) * 100, 100) + "%";
     } catch (e) {}
 }
 
-// 14. STEGANOGRAPHY ENGINES
+// 7. STEGANOGRAPHY (LSB ENGINE)
 async function injectGhostMessage() {
     const imgInput = document.getElementById('imageInput');
     const content = document.getElementById('mainEditor').value;
-    if (!imgInput.files[0] || !content) {
-        sysLog("ERROR: Image and message required.");
-        return;
-    }
+    if (!imgInput.files[0] || !content) return;
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = new Image();
@@ -319,21 +194,17 @@ async function injectGhostMessage() {
             canvas.width = img.width; canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-            const secretData = btoa(content) + "##END##";
-            let binarySecret = "";
-            for (let i = 0; i < secretData.length; i++) {
-                binarySecret += secretData[i].charCodeAt(0).toString(2).padStart(8, '0');
-            }
-            for (let i = 0; i < binarySecret.length; i++) {
-                pixels[i * 4] = (pixels[i * 4] & 0xFE) | parseInt(binarySecret[i]);
+            const data = imageData.data;
+            const binaryMsg = btoa(content).split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join('') + '00000000';
+            for (let i = 0; i < binaryMsg.length; i++) {
+                data[i * 4] = (data[i * 4] & 0xFE) | parseInt(binaryMsg[i]);
             }
             ctx.putImageData(imageData, 0, 0);
             const link = document.createElement('a');
-            link.download = "ghost_manifestation.png";
-            link.href = canvas.toDataURL("image/png");
+            link.download = "ghost_manifest.png";
+            link.href = canvas.toDataURL();
             link.click();
-            sysLog("SUCCESS: Ghost Message manifested.");
+            sysLog("Stegano: Injection Successful.");
             playBip('success');
         };
         img.src = e.target.result;
@@ -352,29 +223,82 @@ async function extractGhostMessage() {
             const ctx = canvas.getContext('2d');
             canvas.width = img.width; canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-            let binarySecret = "";
-            for (let i = 0; i < pixels.length / 4; i++) {
-                binarySecret += (pixels[i * 4] & 1).toString();
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let binary = "";
+            for (let i = 0; i < data.length; i += 4) binary += (data[i] & 1).toString();
+            const bytes = binary.match(/.{8}/g);
+            let chars = "";
+            for (let b of bytes) {
+                if (b === "00000000") break;
+                chars += String.fromCharCode(parseInt(b, 2));
             }
-            let secretData = "";
-            for (let i = 0; i < binarySecret.length; i += 8) {
-                const charCode = parseInt(binarySecret.substr(i, 8), 2);
-                if (charCode === 0) break;
-                secretData += String.fromCharCode(charCode);
-                if (secretData.endsWith("##END##")) break;
-            }
-            if (secretData.includes("##END##")) {
-                const finalMessage = atob(secretData.replace("##END##", ""));
-                document.getElementById('mainEditor').value = finalMessage;
-                sysLog("SUCCESS: Extraction complete.");
-                playBip('success');
-            } else {
-                sysLog("NOTICE: No ghost fragments found.");
-            }
+            document.getElementById('mainEditor').value = atob(chars);
+            sysLog("Stegano: Extraction successful.");
+            playBip('success');
         };
         img.src = e.target.result;
     };
     reader.readAsDataURL(imgInput.files[0]);
 }
+
+// 8. SOVEREIGN MEDIA ENGINE
+document.getElementById('mediaInput')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const videoPlayer = document.getElementById('videoPlayer');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const placeholder = document.getElementById('mediaPlaceholder');
+    const fileNameDisplay = document.getElementById('mediaFileName');
+    
+    const mediaURL = URL.createObjectURL(file);
+    fileNameDisplay.innerText = file.name.toUpperCase();
+    if (placeholder) placeholder.style.display = 'none';
+
+    if (file.type.startsWith('video/')) {
+        audioPlayer.style.display = 'none';
+        videoPlayer.style.display = 'block';
+        videoPlayer.src = mediaURL;
+        videoPlayer.play();
+    } else if (file.type.startsWith('audio/')) {
+        videoPlayer.style.display = 'none';
+        audioPlayer.style.display = 'block';
+        audioPlayer.src = mediaURL;
+        audioPlayer.play();
+    }
+    
+    sysLog(`Media Manifested: ${file.name}`);
+    playBip('success');
+});
+
+// 9. AUTH & SECURITY
+function handleAuth(e) {
+    if(e.key === "Enter") {
+        if(document.getElementById('masterKey').value === SECRET_VAULT_KEY) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('osContent').style.display = 'block';
+            document.getElementById('matrixCanvas').style.opacity = "0.2";
+            refreshVaultList();
+            sysLog("Access Granted. Milestone 2050 Active.");
+            resetIdleTimer();
+        } else {
+            playBip('error');
+            sysLog("Unauthorized access attempt.");
+        }
+    }
+}
+
+function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => location.reload(), 300000); 
+}
+window.onmousemove = resetIdleTimer;
+window.onkeypress = resetIdleTimer;
+
+// 10. CLOCK & PWA
+setInterval(() => {
+    const clock = document.getElementById('system-clock');
+    if (clock) clock.innerText = new Date().toLocaleTimeString('en-GB');
+    const p = document.getElementById('pulse');
+    if(p) p.style.opacity = p.style.opacity === "0" ? "1" : "0";
+}, 1000);

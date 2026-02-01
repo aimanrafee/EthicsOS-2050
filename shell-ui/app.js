@@ -1,19 +1,60 @@
 const SECRET_VAULT_KEY = "aiman2050"; 
 
+// 1. ENJIN BUNYI SINTETIK
+function playBip(type) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square"; 
+        osc.frequency.setValueAtTime(type === 'success' ? 880 : 220, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+    } catch (e) { console.log("Audio muted"); }
+}
+
+// 2. LOG SISTEM
+function sysLog(message) {
+    const logBox = document.getElementById('terminal-log');
+    if (logBox) {
+        const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        logBox.innerHTML += `<br>[${now}] ${message}`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+}
+
+// 3. AUTH DENGAN BUNYI
 function handleAuth(event) {
     if (event.key === "Enter") {
         const input = document.getElementById('masterKey').value;
         if (input === SECRET_VAULT_KEY) {
+            playBip('success'); // AKTIF: Bunyi kejayaan [cite: 2026-01-24]
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('osContent').style.display = 'block';
-            alert("IDENTITY VERIFIED. Welcome to EthicsOS.");
+            checkStorage();
+            sysLog("Session started. Identity verified.");
         } else {
-            alert("ACCESS DENIED: Intrusive signature detected.");
-            document.getElementById('masterKey').value = "";
+            playBip('error'); // AKTIF: Bunyi ralat [cite: 2026-01-24]
+            alert("ACCESS DENIED");
+            sysLog("Warning: Unauthorized access attempt.");
         }
     }
 }
 
+// 4. JAM MASA NYATA
+function updateClock() {
+    const clockElement = document.getElementById('system-clock');
+    if (clockElement) {
+        clockElement.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
+    }
+}
+setInterval(updateClock, 1000);
+
+// 5. SAVE DENGAN BUNYI
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -23,12 +64,17 @@ async function saveToGhost() {
         const writable = await fileHandle.createWritable();
         await writable.write(encrypted);
         await writable.close();
-        alert("SUCCESS: Encrypted data manifested in Ghost Storage.");
+        
+        playBip('success'); // AKTIF: Bunyi simpanan berjaya [cite: 2026-01-24]
+        sysLog("Manifested data to Ghost Storage.");
+        checkStorage();
     } catch (err) {
-        alert("ERROR: Encryption layer failed.");
+        playBip('error'); // AKTIF: Bunyi ralat storan [cite: 2026-01-24]
+        sysLog("Error: Manifestation failed.");
     }
 }
 
+// 6. LOAD DENGAN BUNYI
 async function loadFromGhost() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -37,9 +83,20 @@ async function loadFromGhost() {
         const encrypted = await file.text();
         const decrypted = atob(encrypted.split('').reverse().join(''));
         document.getElementById('mainEditor').value = decrypted;
-        alert("SUCCESS: Data decrypted from the void.");
+        
+        playBip('success'); // AKTIF: Bunyi muatan berjaya [cite: 2026-01-24]
+        sysLog("Decrypted data from the void.");
     } catch (err) {
-        alert("NOTICE: No data found or decryption failed.");
+        playBip('error'); // AKTIF: Bunyi ralat muatan [cite: 2026-01-24]
+        sysLog("Notice: Void is empty.");
     }
 }
 
+async function checkStorage() {
+    try {
+        const root = await navigator.storage.getDirectory();
+        let fileCount = 0;
+        for await (const entry of root.values()) fileCount++;
+        document.getElementById('storage-status').innerText = "GHOST_FILES: " + fileCount;
+    } catch (e) {}
+}

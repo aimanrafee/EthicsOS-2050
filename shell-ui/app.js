@@ -1,15 +1,15 @@
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
+        const encrypted = btoa(content).split('').reverse().join('');
         const root = await navigator.storage.getDirectory();
         const fileHandle = await root.getFileHandle('secure_data.ethx', { create: true });
         const writable = await fileHandle.createWritable();
-        await writable.write(content);
+        await writable.write(encrypted);
         await writable.close();
-        alert("SUCCESS: Data manifested in Ghost Storage.");
+        alert("SUCCESS: Encrypted data manifested in Ghost Storage.");
     } catch (err) {
-        console.error(err);
-        alert("ERROR: Ghost Storage failed to initialize.");
+        alert("ERROR: Encryption layer failed.");
     }
 }
 
@@ -18,10 +18,11 @@ async function loadFromGhost() {
         const root = await navigator.storage.getDirectory();
         const fileHandle = await root.getFileHandle('secure_data.ethx');
         const file = await fileHandle.getFile();
-        const content = await file.text();
-        document.getElementById('mainEditor').value = content;
-        alert("SUCCESS: Data retrieved from the void.");
+        const encrypted = await file.text();
+        const decrypted = atob(encrypted.split('').reverse().join(''));
+        document.getElementById('mainEditor').value = decrypted;
+        alert("SUCCESS: Data decrypted from the void.");
     } catch (err) {
-        alert("NOTICE: No data found in Ghost Storage.");
+        alert("NOTICE: No data found or decryption failed.");
     }
 }

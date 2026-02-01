@@ -1,6 +1,6 @@
 const SECRET_VAULT_KEY = "aiman2050"; 
 
-// 1. ENJIN BUNYI SINTETIK
+// 1. AUDIO ENGINE
 function playBip(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -14,10 +14,10 @@ function playBip(type) {
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.1);
-    } catch (e) { console.log("Audio suppressed"); }
+    } catch (e) { console.log("Audio muted"); }
 }
 
-// 2. MENCETAK LOG SISTEM
+// 2. SYSTEM LOG ENGINE
 function sysLog(message) {
     const logBox = document.getElementById('terminal-log');
     if (logBox) {
@@ -27,35 +27,46 @@ function sysLog(message) {
     }
 }
 
-// 3. PENGESAHAN IDENTITI (AUTH)
+// 3. SECURE AUTH LOGIC (Milestone 15%)
 function handleAuth(event) {
     if (event.key === "Enter") {
         const input = document.getElementById('masterKey').value;
+        const statusUI = document.getElementById('security-status-ui');
+        const dashStatus = document.getElementById('dash-security-level');
+
         if (input === SECRET_VAULT_KEY) {
             playBip('success');
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('osContent').style.display = 'block';
+            
+            // Sync status to ALPHA
+            if (dashStatus) {
+                dashStatus.innerText = "[SECURE_LEVEL: ALPHA]";
+                dashStatus.style.color = "#00ff00";
+            }
+            
             checkStorage();
-            loadShadowDraft(); // Milestone 12%: Pulihkan draf rahsia
+            loadShadowDraft();
             sysLog("Session started. Identity verified.");
         } else {
             playBip('error');
-            alert("ACCESS DENIED");
-            sysLog("Warning: Unauthorized access attempt.");
+            if (statusUI) {
+                statusUI.innerText = "[SECURE_LEVEL: OMEGA - BREACH DETECTED]";
+                statusUI.style.color = "#ff0000";
+            }
+            sysLog("CRITICAL: Unauthorized access attempt.");
+            document.getElementById('masterKey').value = ""; // Clear input
         }
     }
 }
 
-// 4. SISTEM JAM MASA NYATA
-function updateClock() {
-    const clockElement = document.getElementById('system-clock');
-    if (clockElement) {
-        clockElement.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
-    }
-}
-setInterval(updateClock, 1000);
+// 4. CLOCK ENGINE
+setInterval(() => {
+    const clock = document.getElementById('system-clock');
+    if (clock) clock.innerText = "TIME: " + new Date().toLocaleTimeString('en-GB', { hour12: false });
+}, 1000);
 
-// 5. PENGURUSAN STORAN GHOST (SAVE)
+// 5. GHOST STORAGE (SAVE)
 async function saveToGhost() {
     const content = document.getElementById('mainEditor').value;
     try {
@@ -66,15 +77,12 @@ async function saveToGhost() {
         await writable.write(encrypted);
         await writable.close();
         playBip('success');
-        sysLog("Manifested data to Ghost Storage.");
+        sysLog("Manifested to Ghost Storage.");
         checkStorage();
-    } catch (err) {
-        playBip('error');
-        sysLog("Error: Manifestation failed.");
-    }
+    } catch (err) { sysLog("Error: Manifestation failed."); }
 }
 
-// 6. PENGURUSAN STORAN GHOST (LOAD)
+// 6. GHOST STORAGE (LOAD)
 async function loadFromGhost() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -84,20 +92,18 @@ async function loadFromGhost() {
         const decrypted = atob(encrypted.split('').reverse().join(''));
         document.getElementById('mainEditor').value = decrypted;
         playBip('success');
-        sysLog("Decrypted data from the void.");
-    } catch (err) {
-        playBip('error');
-        sysLog("Notice: Void is empty.");
-    }
+        sysLog("Restored from the void.");
+    } catch (err) { sysLog("Notice: Void is empty."); }
 }
 
-// 7. PEMANTAU STATUS STORAN
+// 7. STORAGE ANALYTICS
 async function checkStorage() {
     try {
         const root = await navigator.storage.getDirectory();
-        let fileCount = 0;
-        for await (const entry of root.values()) fileCount++;
-        document.getElementById('storage-status').innerText = "GHOST_FILES: " + fileCount;
+        let count = 0;
+        for await (const entry of root.values()) count++;
+        const storageEl = document.getElementById('storage-status');
+        if (storageEl) storageEl.innerText = "GHOST_FILES: " + count;
     } catch (e) {}
 }
 
@@ -105,7 +111,6 @@ async function checkStorage() {
 async function shadowAutoSave() {
     const content = document.getElementById('mainEditor').value;
     if (content.trim() === "") return;
-
     try {
         const encrypted = btoa(content).split('').reverse().join('');
         const root = await navigator.storage.getDirectory();
@@ -114,12 +119,11 @@ async function shadowAutoSave() {
         await writable.write(encrypted);
         await writable.close();
         sysLog("Shadow draft synchronized.");
-    } catch (err) {
-        console.log("Auto-save latent.");
-    }
+    } catch (e) {}
 }
-setInterval(shadowAutoSave, 30000); // Kitaran 30 saat [cite: 2026-02-02]
+setInterval(shadowAutoSave, 30000);
 
+// 9. PROACTIVE RECOVERY
 async function loadShadowDraft() {
     try {
         const root = await navigator.storage.getDirectory();
@@ -127,12 +131,9 @@ async function loadShadowDraft() {
         const file = await fileHandle.getFile();
         const encrypted = await file.text();
         const decrypted = atob(encrypted.split('').reverse().join(''));
-        
         if (document.getElementById('mainEditor').value === "") {
             document.getElementById('mainEditor').value = decrypted;
             sysLog("Restored last shadow draft.");
         }
-    } catch (e) {
-        sysLog("No shadow draft detected.");
-    }
+    } catch (e) { sysLog("No shadow draft detected."); }
 }

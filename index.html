@@ -5,20 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EthicOS 2050 | Sovereign Terminal</title>
     <style>
-        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: #050505; }
+        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #loginOverlay { text-align: center; border: 1px solid #00ff00; padding: 40px; background: #050505; z-index: 100; }
         .container { display: none; width: 800px; text-align: center; }
         #status-bar { display: flex; justify-content: space-between; border-bottom: 1px solid #004400; padding: 10px; margin-bottom: 20px; font-size: 14px; }
-        input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 10px; margin-top: 10px; text-align: center; outline: none; }
-        textarea { width: 100%; height: 200px; background: #050505; color: #00ff00; border: 1px solid #004400; padding: 10px; margin-top: 20px; outline: none; }
-        #terminal-log { background: #050505; color: #008800; border: 1px solid #004400; height: 80px; margin-top: 10px; font-size: 10px; text-align: left; padding: 5px; overflow-y: auto; font-family: monospace; }
-        button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 10px; cursor: pointer; margin-top: 10px; }
+        input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 10px; margin-top: 10px; text-align: center; outline: none; width: 200px; }
+        textarea { width: 100%; height: 200px; background: #050505; color: #00ff00; border: 1px solid #004400; padding: 10px; margin-top: 20px; outline: none; resize: none; }
+        #terminal-log { background: #050505; color: #008800; border: 1px solid #004400; height: 100px; margin-top: 10px; font-size: 11px; text-align: left; padding: 8px; overflow-y: auto; font-family: monospace; }
+        button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 10px; cursor: pointer; margin: 10px 5px 0 5px; transition: 0.3s; }
+        button:hover { background: #00ff00; color: #000; }
         h1, h2 { letter-spacing: 2px; }
     </style>
 </head>
 <body>
     <div id="loginOverlay">
         <h2>ETHICOS_SOVEREIGN_AUTH</h2>
+        <div id="security-status-ui" style="color: #00ff00; font-size: 12px; margin-bottom: 15px;">[SECURE_LEVEL: ALPHA]</div>
         <p>ENTER MASTER KEY</p>
         <input type="password" id="masterKey" placeholder="••••••••" onkeypress="handleAuth(event)">
     </div>
@@ -26,12 +28,14 @@
     <div class="container" id="osContent">
         <div id="status-bar">
             <div id="system-clock">TIME: 00:00:00</div>
+            <div id="dash-security-level" style="color: #00ff00; font-weight: bold;">[SECURE_LEVEL: ALPHA]</div>
             <div>STATION: SECURE_NODE_01</div>
             <div id="storage-status">GHOST_FILES: 0</div>
         </div>
 
         <h1>EthicsOS v1.0</h1>
         <div style="font-size: 12px; color: #008800; margin-bottom: 10px;">SESSION: SECURE | MODE: OFFLINE_SMART</div>
+        
         <textarea id="mainEditor" placeholder="Enter secure data..."></textarea>
         
         <div id="terminal-log">[SYSTEM READY] - Waiting for input...</div>

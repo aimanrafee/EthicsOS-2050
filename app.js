@@ -106,6 +106,7 @@ function handleAuth(event) {
             checkStorage();
             loadShadowDraft();
             refreshVaultList();
+            resetIdleTimer(); // Mulakan timer sentinel selepas login [cite: 2026-01-24]
             sysLog("Session started. Identity verified.");
         } else {
             playBip('error');
@@ -204,23 +205,16 @@ async function wipeVault() {
     
     if (confirmation) {
         try {
-            // Mainkan bunyi amaran siren [cite: 2026-01-24]
             playBip('error'); 
             setTimeout(() => playBip('error'), 200);
-
             const root = await navigator.storage.getDirectory();
-            
-            // Padam setiap fail dalam storan [cite: 2026-02-02]
             for await (const entry of root.values()) {
                 await root.removeEntry(entry.name);
                 sysLog(`ERASED: ${entry.name}`);
             }
-
-            // Reset UI [cite: 2026-01-24]
             document.getElementById('mainEditor').value = "";
             checkStorage();
             refreshVaultList();
-            
             sysLog("CRITICAL: Vault has been sanitized. Zero data remains.");
             alert("VAULT SANITIZED");
         } catch (err) {
@@ -228,3 +222,42 @@ async function wipeVault() {
         }
     }
 }
+
+// 12. BINARY GHOST LOCK (35% Milestone) [cite: 2026-01-24]
+let idleTimer;
+const LOCK_TIMEOUT = 300000; // 5 minit (300,000 ms) [cite: 2026-01-24]
+
+function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    if (document.getElementById('osContent').style.display === 'block') {
+        idleTimer = setTimeout(initiateGhostLock, LOCK_TIMEOUT);
+    }
+}
+
+async function initiateGhostLock() {
+    sysLog("SENTINEL: Idle state detected. Initiating Binary Ghost Lock...");
+    
+    // 1. Simpan draf secara automatik sebelum kunci [cite: 2026-02-02]
+    await shadowAutoSave();
+    
+    // 2. Kosongkan editor untuk elakkan pengintipan [cite: 2026-01-24]
+    document.getElementById('mainEditor').value = "";
+    
+    // 3. Kembali ke skrin login
+    document.getElementById('osContent').style.display = 'none';
+    document.getElementById('loginOverlay').style.display = 'block';
+    document.getElementById('matrixCanvas').style.opacity = "1.0"; 
+    
+    // 4. Reset input kunci
+    document.getElementById('masterKey').value = "";
+    document.getElementById('security-status-ui').innerText = "[SESSION_LOCKED_BY_SENTINEL]";
+    document.getElementById('security-status-ui').style.color = "#ffff00";
+    
+    playBip('error');
+    sysLog("SENTINEL: Session secured. Data moved to shadow storage.");
+}
+
+// Pantau aktiviti pengguna untuk reset timer [cite: 2026-01-24]
+window.onmousemove = resetIdleTimer;
+window.onkeypress = resetIdleTimer;
+window.onclick = resetIdleTimer;
